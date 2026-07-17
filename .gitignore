@@ -1,0 +1,11 @@
+# macOS
+.DS_Store
+
+# dependencies / builds (for later steps: Lambda bundles, React frontend)
+node_modules/
+dist/
+*.zip
+
+# local env & secrets — never commit AWS keys or API endpoints
+.env
+.env.*

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import UploadPanel from "./components/UploadPanel.jsx";
+import Hero from "./components/Hero.jsx";
 import SummaryTiles from "./components/SummaryTiles.jsx";
 import FlaggedAlerts from "./components/FlaggedAlerts.jsx";
 import CategoryChart from "./components/CategoryChart.jsx";
@@ -33,44 +33,41 @@ export default function App() {
     setSource(null);
   }
 
+  // Landing page
+  if (!transactions) {
+    return <Hero onFile={handleFile} onSample={handleSample} loading={loading} />;
+  }
+
+  // Results dashboard
   return (
     <>
       <header className="app-header">
-        <h1>Spottern!</h1>
+        <span className="logo-sm" onClick={reset} style={{ cursor: "pointer" }}>
+          Spottern<span className="bang">!</span>
+        </span>
         <span className="tagline">Spot unusual spending in your bank statement</span>
       </header>
 
       <div className="container">
-        {!transactions ? (
-          <UploadPanel onFile={handleFile} onSample={handleSample} loading={loading} />
-        ) : (
-          <>
-            {source === "demo" && (
-              <div className="banner">
-                {HAS_BACKEND
-                  ? "Showing sample data — the live analysis wasn't reachable."
-                  : "Demo mode — showing a sample statement analyzed by Spottern."}
-                {" "}
-                <a href="#" onClick={(e) => { e.preventDefault(); reset(); }}>
-                  Upload another
-                </a>
-              </div>
-            )}
-            {source === "live" && (
-              <div className="banner">
-                Analyzed live by Claude on Amazon Bedrock.{" "}
-                <a href="#" onClick={(e) => { e.preventDefault(); reset(); }}>
-                  Upload another
-                </a>
-              </div>
-            )}
-
-            <SummaryTiles transactions={transactions} />
-            <FlaggedAlerts transactions={transactions} />
-            <CategoryChart transactions={transactions} />
-            <TransactionTable transactions={transactions} />
-          </>
+        {source === "demo" && (
+          <div className="banner">
+            {HAS_BACKEND
+              ? "Showing sample data — the live analysis wasn't reachable."
+              : "Demo mode — showing a sample statement analyzed by Spottern."}{" "}
+            <a href="#" onClick={(e) => { e.preventDefault(); reset(); }}>Spot another</a>
+          </div>
         )}
+        {source === "live" && (
+          <div className="banner">
+            Analyzed live by Claude on Amazon Bedrock.{" "}
+            <a href="#" onClick={(e) => { e.preventDefault(); reset(); }}>Spot another</a>
+          </div>
+        )}
+
+        <SummaryTiles transactions={transactions} />
+        <FlaggedAlerts transactions={transactions} />
+        <CategoryChart transactions={transactions} />
+        <TransactionTable transactions={transactions} />
       </div>
     </>
   );

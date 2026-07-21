@@ -92,7 +92,18 @@ body {
 }
 .hero > * { position: relative; z-index: 1; }
 
-.hero .spotlight { font-size: 46px; margin-bottom: 6px; filter: drop-shadow(0 4px 16px rgba(255,153,0,0.5)); }
+.hero .hero-badge {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 14px;
+  box-shadow: 0 12px 44px rgba(255, 153, 0, 0.45), 0 0 0 6px rgba(255,255,255,0.08);
+}
+.hero .hero-badge img { width: 76%; height: 76%; object-fit: contain; }
 
 .hero .logo {
   font-family: var(--font-logo);
@@ -183,6 +194,13 @@ body {
   align-items: center;
   gap: 12px;
 }
+.app-header .header-brand { display: flex; align-items: center; gap: 10px; }
+.app-header .header-badge {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: #fff; display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+}
+.app-header .header-badge img { width: 74%; height: 74%; object-fit: contain; }
 .app-header .logo-sm { font-family: var(--font-logo); font-weight: 700; font-size: 24px; }
 .app-header .logo-sm .bang { color: var(--aws-orange); }
 .app-header .tagline { font-size: 13px; opacity: 0.8; font-family: var(--font-logo); }

@@ -24,7 +24,9 @@ export default function Hero({ onFile, onSample, loading }) {
       onDragLeave={() => setDrag(false)}
       onDrop={handleDrop}
     >
-      <div className="spotlight" aria-hidden="true">🔦</div>
+      <div className="hero-badge" aria-hidden="true">
+        <img src="/logo.png" alt="" />
+      </div>
 
       <h1 className="logo">Spottern<span className="bang">!</span></h1>
       <p className="tagline">Spot unusual spending in your bank statement</p>

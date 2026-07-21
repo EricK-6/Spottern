@@ -1,23 +1,24 @@
 /**
  * Categorize Lambda.
- * Takes ingested transactions and sends the WHOLE statement to Claude
- * Opus 4.8 on Amazon Bedrock in a single call — whole-statement context is
- * what lets the model spot duplicates and out-of-pattern spend, not just
- * label merchants. The model's verdicts are merged back into the shared
- * Transaction schema (category, flagged, explanation, anomalyScore).
+ * Takes ingested transactions and sends the WHOLE statement to Claude on
+ * Amazon Bedrock in a single call — whole-statement context is what lets the
+ * model spot duplicates and out-of-pattern spend, not just label merchants.
+ * The model's verdicts are merged back into the shared Transaction schema
+ * (category, flagged, explanation, anomalyScore).
  *
  * Env vars:
- *   BEDROCK_MODEL_ID       - default au.anthropic.claude-opus-4-8 (Opus 4.8 in
- *                            ap-southeast-2 is inference-profile only; the au.
- *                            profile keeps inference in Australia)
+ *   BEDROCK_MODEL_ID       - default au.anthropic.claude-opus-4-8. Set to
+ *                            au.anthropic.claude-haiku-4-5-20251001-v1:0 to run
+ *                            on Haiku. In ap-southeast-2 these are inference
+ *                            profiles; the au. profile keeps inference in AU.
  *   BEDROCK_REGION         - default ap-southeast-2
  *   TABLE_NAME             - optional: persist enriched records to DynamoDB
  *   NOTIFY_FUNCTION_NAME   - optional: invoke the notify Lambda with flagged records
  *
- * Deployment: bundle `@anthropic-ai/bedrock-sdk` (npm install in this folder,
- * zip together with ../../shared). IAM needs bedrock:InvokeModel on the
- * inference profile + foundation model, plus dynamodb:BatchWriteItem /
- * lambda:InvokeFunction when the optional stages are enabled.
+ * No npm install needed — the Bedrock Converse client ships with the Lambda
+ * runtime's AWS SDK v3. IAM needs bedrock:InvokeModel on the inference profile
+ * + foundation model, plus dynamodb:BatchWriteItem / lambda:InvokeFunction
+ * when the optional stages are enabled.
  */
 
 const { CATEGORIES } = require("../../shared/transaction-schema");
@@ -64,15 +65,28 @@ const RESULT_SCHEMA = {
 };
 
 async function analyzeWithClaude(transactions) {
-  // Lazy require so the merge logic below is unit-testable without the SDK.
-  // Note: we use the classic bedrock-runtime client (AnthropicBedrock), not
-  // AnthropicBedrockMantle — the uni org's service control policy explicitly
-  // denies the bedrock-mantle endpoint, while classic InvokeModel is allowed.
-  const { AnthropicBedrock } = require("@anthropic-ai/bedrock-sdk");
-  const client = new AnthropicBedrock({
-    awsRegion: process.env.BEDROCK_REGION || "ap-southeast-2"
+  // Bedrock's Converse API. We use Converse (not the native InvokeModel /
+  // @anthropic-ai/bedrock-sdk path) because on the uni account InvokeModel is
+  // blocked by an AWS Marketplace-subscription policy while Converse is
+  // permitted. The Converse client ships in the Lambda runtime, so this
+  // function has no bundled dependency. Structured output is enforced with a
+  // forced tool call whose input schema is the shared RESULT_SCHEMA.
+  const { BedrockRuntimeClient, ConverseCommand } = require("@aws-sdk/client-bedrock-runtime");
+  const client = new BedrockRuntimeClient({
+    region: process.env.BEDROCK_REGION || "ap-southeast-2"
   });
 
+  const modelId = process.env.BEDROCK_MODEL_ID || "au.anthropic.claude-opus-4-8";
+  const res = await client.send(new ConverseCommand(buildConverseRequest(transactions, modelId)));
+
+  const toolBlock = (res.output?.message?.content || []).find(b => b.toolUse);
+  if (!toolBlock) throw new Error(`Bedrock returned no analysis (stopReason: ${res.stopReason})`);
+  // Converse already parses the tool input into a JS object.
+  return toolBlock.toolUse.input.results;
+}
+
+/** Pure Converse request builder — exported so its shape is unit-testable. */
+function buildConverseRequest(transactions, modelId) {
   // Only send what the model needs — keeps tokens down and avoids leaking
   // pipeline metadata into the prompt.
   const statement = transactions.map(t => ({
@@ -83,18 +97,25 @@ async function analyzeWithClaude(transactions) {
     direction: t.direction
   }));
 
-  const response = await client.messages.create({
-    model: process.env.BEDROCK_MODEL_ID || "au.anthropic.claude-opus-4-8",
-    max_tokens: 16000,
-    thinking: { type: "adaptive" },
-    system: SYSTEM_PROMPT,
-    output_config: { format: { type: "json_schema", schema: RESULT_SCHEMA } },
-    messages: [{ role: "user", content: JSON.stringify(statement) }]
-  });
-
-  const text = response.content.find(block => block.type === "text");
-  if (!text) throw new Error(`Bedrock returned no text block (stop_reason: ${response.stop_reason})`);
-  return JSON.parse(text.text).results;
+  return {
+    modelId,
+    system: [{ text: SYSTEM_PROMPT }],
+    messages: [{ role: "user", content: [{ text: JSON.stringify(statement) }] }],
+    inferenceConfig: { maxTokens: 8000 },
+    toolConfig: {
+      tools: [
+        {
+          toolSpec: {
+            name: "report_analysis",
+            description: "Report the category, flag, anomaly score, and explanation for every transaction.",
+            inputSchema: { json: RESULT_SCHEMA }
+          }
+        }
+      ],
+      // Force the tool so the model must return schema-valid structured output.
+      toolChoice: { tool: { name: "report_analysis" } }
+    }
+  };
 }
 
 /**
@@ -180,5 +201,6 @@ exports.handler = async (event) => {
 // Exported for local testing without invoking through API Gateway
 exports.analyzeWithClaude = analyzeWithClaude;
 exports.mergeAnalysis = mergeAnalysis;
+exports.buildConverseRequest = buildConverseRequest;
 exports.RESULT_SCHEMA = RESULT_SCHEMA;
 exports.SYSTEM_PROMPT = SYSTEM_PROMPT;

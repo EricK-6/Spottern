@@ -97,6 +97,22 @@ Expected: the three planted anomalies (ELECTRONICS WORLD HK, the duplicate
 MCDONALDS pair, UNKNOWN MERCHANT OVERSEAS) come back `flagged: true` with
 plain-language explanations.
 
+## Switching the model / going live
+
+`BEDROCK_MODEL_ID` selects the model; the IAM policy already covers any Anthropic
+Claude model, so no policy change is needed to switch. To run on Haiku 4.5
+(reachable soonest on Bedrock) instead of the Opus 4.8 default:
+
+```bash
+sam deploy --parameter-overrides BedrockModelId=au.anthropic.claude-haiku-4-5-20251001-v1:0
+```
+
+The categorize Lambda uses the Bedrock **Converse** API (validated end-to-end),
+so once the account's Anthropic Marketplace subscription is active, real uploads
+get live AI analysis with no code change. To flip the hosted frontend from demo
+to live, rebuild with `frontend/.env` present (`npm run build`) and re-run the
+sync step in `frontend/deploy-web.sh`.
+
 ## Tear down
 
 ```bash

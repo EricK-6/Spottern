@@ -134,9 +134,11 @@ Resources:
               Action:
                 - bedrock:InvokeModel
                 - bedrock:InvokeModelWithResponseStream
+              # Any Anthropic Claude model + its regional inference profiles, so
+              # BEDROCK_MODEL_ID can point at Haiku or Opus without a policy change.
               Resource:
-                - !Sub "arn:aws:bedrock:*::foundation-model/anthropic.claude-opus-4-8*"
-                - !Sub "arn:aws:bedrock:*:${AWS::AccountId}:inference-profile/*.anthropic.claude-opus-4-8*"
+                - "arn:aws:bedrock:*::foundation-model/anthropic.*"
+                - !Sub "arn:aws:bedrock:*:${AWS::AccountId}:inference-profile/*.anthropic.*"
       Events:
         Post:
           Type: HttpApi

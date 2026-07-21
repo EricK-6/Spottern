@@ -1,0 +1,196 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  Spottern! — bank statement anomaly review. Ingest (CSV over API, PDF over
+  S3+Textract) -> categorize + flag with Claude Opus 4.8 on Bedrock -> persist
+  to DynamoDB -> notify customer (SES) and BNZ fraud-ops (SNS).
+
+Parameters:
+  SenderEmail:
+    Type: String
+    Default: ""
+    Description: SES-verified From address for customer alerts. Leave blank to skip email until verified.
+  CustomerEmail:
+    Type: String
+    Default: ""
+    Description: Fallback recipient for customer alerts (in SES sandbox this must also be verified).
+  BedrockModelId:
+    Type: String
+    Default: au.anthropic.claude-opus-4-8
+    Description: Bedrock inference profile ID. In ap-southeast-2 Opus 4.8 is inference-profile only.
+  BedrockRegion:
+    Type: String
+    Default: ap-southeast-2
+
+Globals:
+  Function:
+    Runtime: nodejs24.x
+    # CodeUri is the whole backend/ folder so each handler can require ../../shared
+    # and the categorize function can bundle its node_modules. Handlers are
+    # addressed by their path within that folder.
+    CodeUri: ./
+    Timeout: 30
+    MemorySize: 256
+    Architectures: [x86_64]
+
+Resources:
+  # --- Data + messaging -----------------------------------------------------
+  TransactionsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: spottern-transactions
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: transactionId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: transactionId
+          KeyType: HASH
+
+  UploadsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "spottern-uploads-${AWS::AccountId}-${AWS::Region}"
+
+  FraudTopic:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: spottern-bnz-fraud-ops
+
+  # --- HTTP API (CSV ingest, categorize, read) ------------------------------
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowMethods: [GET, POST, OPTIONS]
+        AllowHeaders: [Content-Type]
+
+  # --- Ingest: CSV (synchronous, frontend-orchestrated) ---------------------
+  CsvIngestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/ingest/csv-parser.handler
+      Events:
+        Post:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Method: POST
+            Path: /ingest/csv
+
+  # --- Ingest: PDF (async, S3-triggered) ------------------------------------
+  PdfIngestFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/ingest/pdf-parser.handler
+      Timeout: 180  # Textract async polling
+      Environment:
+        Variables:
+          CATEGORIZE_FUNCTION_NAME: !Ref CategorizeFunction
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Sub "spottern-uploads-${AWS::AccountId}-${AWS::Region}"
+        - Statement:
+            - Effect: Allow
+              Action:
+                - textract:StartDocumentAnalysis
+                - textract:GetDocumentAnalysis
+              Resource: "*"
+        - LambdaInvokePolicy:
+            FunctionName: !Ref CategorizeFunction
+      Events:
+        PdfUploaded:
+          Type: S3
+          Properties:
+            Bucket: !Ref UploadsBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .pdf
+
+  # --- Categorize + flag (Bedrock Opus 4.8) ---------------------------------
+  CategorizeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/categorize/index.handler
+      Timeout: 120  # Bedrock call with adaptive thinking
+      MemorySize: 512
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TransactionsTable
+          NOTIFY_FUNCTION_NAME: !Ref NotifyFunction
+          BEDROCK_MODEL_ID: !Ref BedrockModelId
+          BEDROCK_REGION: !Ref BedrockRegion
+      Policies:
+        - DynamoDBWritePolicy:
+            TableName: !Ref TransactionsTable
+        - LambdaInvokePolicy:
+            FunctionName: !Ref NotifyFunction
+        - Statement:
+            - Effect: Allow
+              Action:
+                - bedrock:InvokeModel
+                - bedrock:InvokeModelWithResponseStream
+              Resource:
+                - !Sub "arn:aws:bedrock:*::foundation-model/anthropic.claude-opus-4-8*"
+                - !Sub "arn:aws:bedrock:*:${AWS::AccountId}:inference-profile/*.anthropic.claude-opus-4-8*"
+      Events:
+        Post:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Method: POST
+            Path: /categorize
+
+  # --- Notify (SES customer email + SNS bank alert) -------------------------
+  NotifyFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/notify/index.handler
+      Environment:
+        Variables:
+          SNS_TOPIC_ARN: !Ref FraudTopic
+          SENDER_EMAIL: !Ref SenderEmail
+          CUSTOMER_EMAIL: !Ref CustomerEmail
+      Policies:
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt FraudTopic.TopicName
+        - Statement:
+            - Effect: Allow
+              Action: ses:SendEmail
+              Resource: "*"
+
+  # --- Read API (GET /transactions from DynamoDB) ---------------------------
+  GetTransactionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambdas/api/get-transactions.handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref TransactionsTable
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref TransactionsTable
+      Events:
+        Get:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref Api
+            Method: GET
+            Path: /transactions
+
+Outputs:
+  ApiBaseUrl:
+    Description: Base URL for the frontend VITE_API_BASE
+    Value: !Sub "https://${Api}.execute-api.${AWS::Region}.amazonaws.com"
+  UploadsBucketName:
+    Description: Drop PDF statements here to trigger the async pipeline
+    Value: !Ref UploadsBucket
+  FraudTopicArn:
+    Description: Subscribe BNZ fraud-ops (email/SMS) to this SNS topic
+    Value: !Ref FraudTopic
+  TransactionsTableName:
+    Value: !Ref TransactionsTable

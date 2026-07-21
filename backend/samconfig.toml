@@ -1,0 +1,12 @@
+# SAM deploy config for Spottern. Region pinned to ap-southeast-2 (Sydney) —
+# the only region Bedrock is reachable on the uni account.
+version = 0.1
+
+[default.deploy.parameters]
+stack_name = "spottern"
+region = "ap-southeast-2"
+resolve_s3 = true
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+# Fill SenderEmail/CustomerEmail once verified in SES (see DEPLOY.md):
+# parameter_overrides = "SenderEmail=you@example.com CustomerEmail=you@example.com"

@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Hero from "./components/Hero.jsx";
 import Analyzing from "./components/Analyzing.jsx";
+import InsightBanner from "./components/InsightBanner.jsx";
 import SummaryTiles from "./components/SummaryTiles.jsx";
 import FlaggedAlerts from "./components/FlaggedAlerts.jsx";
 import CategoryChart from "./components/CategoryChart.jsx";
@@ -73,10 +74,13 @@ export default function App() {
           </div>
         )}
 
+        <InsightBanner transactions={transactions} />
         <SummaryTiles transactions={transactions} />
         <FlaggedAlerts transactions={transactions} />
         <CategoryChart transactions={transactions} />
         <TransactionTable transactions={transactions} />
+
+        <div className="trust-chip">⚡ Powered by Claude on Amazon Bedrock · AWS × BNZ</div>
       </div>
     </>
   );

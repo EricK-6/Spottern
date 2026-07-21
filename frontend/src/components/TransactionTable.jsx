@@ -1,13 +1,31 @@
-import React from "react";
+import React, { useState } from "react";
 import { nzd } from "../format.js";
 
-/** Full statement, most recent first, with flagged rows highlighted. */
+/** Full statement, most recent first, with an optional flagged-only filter. */
 export default function TransactionTable({ transactions }) {
-  const rows = [...transactions].sort((a, b) => b.date.localeCompare(a.date));
+  const [flaggedOnly, setFlaggedOnly] = useState(false);
+  const flaggedCount = transactions.filter((t) => t.flagged).length;
+
+  const rows = [...transactions]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .filter((t) => !flaggedOnly || t.flagged);
 
   return (
     <div className="card">
-      <h2>All transactions</h2>
+      <div className="table-head">
+        <h2>All transactions</h2>
+        {flaggedCount > 0 && (
+          <label className="toggle">
+            <input
+              type="checkbox"
+              checked={flaggedOnly}
+              onChange={(e) => setFlaggedOnly(e.target.checked)}
+            />
+            <span className="toggle-track"><span className="toggle-thumb" /></span>
+            Show flagged only
+          </label>
+        )}
+      </div>
       <div style={{ overflowX: "auto" }}>
         <table className="txn-table">
           <thead>

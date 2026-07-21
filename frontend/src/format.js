@@ -9,3 +9,10 @@ const nzdFormatter = new Intl.NumberFormat("en-NZ", {
 export function nzd(amount) {
   return nzdFormatter.format(amount);
 }
+
+/** Turn a 0–1 anomaly score into a plain-language risk level + style class. */
+export function riskLevel(score) {
+  if (score >= 0.7) return { label: "High risk", cls: "high" };
+  if (score >= 0.4) return { label: "Medium risk", cls: "med" };
+  return { label: "Low risk", cls: "low" };
+}

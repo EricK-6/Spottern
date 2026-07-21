@@ -64,8 +64,8 @@ export async function analyzeStatement(file) {
     }
   }
 
-  // Small delay so the loading state is visible — makes the demo feel real.
-  await new Promise(r => setTimeout(r, 600));
+  // Delay so the "analyzing" moment is visible — makes the demo feel real.
+  await new Promise(r => setTimeout(r, 1700));
   return { transactions: MOCK_TRANSACTIONS, source: "demo" };
 }
 

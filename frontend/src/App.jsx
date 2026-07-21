@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import Hero from "./components/Hero.jsx";
+import Analyzing from "./components/Analyzing.jsx";
 import SummaryTiles from "./components/SummaryTiles.jsx";
 import FlaggedAlerts from "./components/FlaggedAlerts.jsx";
 import CategoryChart from "./components/CategoryChart.jsx";
@@ -22,16 +23,23 @@ export default function App() {
     }
   }
 
-  function handleSample(id) {
+  async function handleSample(id) {
+    setLoading(true);
+    // Brief pause so the "analyzing" moment is visible, then load the sample.
+    await new Promise((r) => setTimeout(r, 1700));
     const result = loadSample(id);
     setTransactions(result.transactions);
     setSource(result.source);
+    setLoading(false);
   }
 
   function reset() {
     setTransactions(null);
     setSource(null);
   }
+
+  // Analyzing state (takes priority so the AI moment shows for uploads + samples)
+  if (loading) return <Analyzing />;
 
   // Landing page
   if (!transactions) {

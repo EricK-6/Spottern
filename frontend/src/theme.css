@@ -268,6 +268,50 @@ body {
 .flag .why { font-size: 14px; color: var(--text-secondary); line-height: 1.5; }
 .flag-tag { color: var(--flag-accent); font-weight: 800; font-size: 13px; }
 
+/* plain-language risk pill */
+.risk-pill { font-weight: 800; padding: 1px 8px; border-radius: 999px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.3px; }
+.risk-pill.high { background: rgba(214,55,31,0.14); color: var(--status-critical); }
+.risk-pill.med  { background: rgba(255,153,0,0.18); color: var(--aws-orange-dk); }
+.risk-pill.low  { background: rgba(10,99,212,0.12); color: var(--bnz-blue); }
+@media (prefers-color-scheme: dark) { .risk-pill.med { color: #ffb057; } .risk-pill.low { color: var(--bnz-blue-lite); } }
+
+/* "charged twice" badge */
+.dup-badge { display: inline-block; margin-left: 8px; background: var(--flag-accent); color: #fff; font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 999px; vertical-align: middle; }
+
+/* confirm / report actions */
+.flag-actions { display: flex; gap: 8px; margin-top: 10px; }
+.fa-btn { font-family: var(--font-body); font-weight: 700; font-size: 13px; border-radius: 999px; padding: 6px 14px; cursor: pointer; border: 1px solid transparent; transition: background 0.12s, transform 0.1s; }
+.fa-btn:active { transform: scale(0.97); }
+.fa-btn.safe { background: transparent; border-color: var(--border); color: var(--text-secondary); }
+.fa-btn.safe:hover { border-color: var(--text-muted); }
+.fa-btn.report { background: var(--flag-accent); color: #fff; }
+.fa-btn.report:hover { filter: brightness(1.07); }
+.resolve-note { margin-top: 10px; font-size: 13px; font-weight: 700; }
+.resolve-note.reported { color: var(--bnz-blue); }
+.resolve-note.safe { color: var(--status-good); }
+@media (prefers-color-scheme: dark) { .resolve-note.reported { color: var(--bnz-blue-lite); } }
+
+/* analyzing moment */
+.hero.analyzing { gap: 8px; }
+.hero-badge.pulse { animation: pulse 1.4s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { transform: scale(1); box-shadow: 0 12px 44px rgba(255,153,0,0.35); } 50% { transform: scale(1.06); box-shadow: 0 14px 54px rgba(255,153,0,0.6); } }
+.spinner { width: 34px; height: 34px; margin: 22px 0 10px; border-radius: 50%; border: 3px solid rgba(255,255,255,0.2); border-top-color: var(--aws-orange); animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.analyze-step { font-family: var(--font-logo); font-weight: 500; font-size: 18px; color: #dfe8ff; margin: 0; }
+
+/* subtle reveal on results */
+.reveal { animation: reveal 0.4s ease both; }
+@keyframes reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* staggered cascade when the dashboard appears */
+.tiles .tile { animation: reveal 0.4s ease both; }
+.tiles .tile:nth-child(2) { animation-delay: 0.05s; }
+.tiles .tile:nth-child(3) { animation-delay: 0.10s; }
+.tiles .tile:nth-child(4) { animation-delay: 0.15s; }
+.container > .card { animation: reveal 0.45s ease both; }
+.container > .card:nth-of-type(2) { animation-delay: 0.08s; }
+.container > .card:nth-of-type(3) { animation-delay: 0.16s; }
+
 /* ---------------------------------------------------- Category chart --- */
 .bar-row { display: grid; grid-template-columns: 116px 1fr auto; align-items: center; gap: 12px; margin: 9px 0; }
 .bar-row .cat { font-size: 13px; color: var(--text-secondary); text-transform: capitalize; text-align: right; font-weight: 600; }

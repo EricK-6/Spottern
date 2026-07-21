@@ -32,6 +32,8 @@ You receive one full statement as a JSON array of transactions. For EVERY transa
 2. "flagged" — true when the transaction is unusual or suspicious in the context of the whole statement. Watch especially for:
    - large purchases from overseas or foreign merchants,
    - duplicate charges (same merchant, same amount, same day),
+   - a burst of several very small charges from unfamiliar online merchants close together in time (a common sign of card-testing fraud) — flag each charge in the burst,
+   - rapidly escalating repeated payments to the same merchant (e.g. crypto exchanges), or a large one-off transfer to an unfamiliar person or overseas account,
    - vague or unidentifiable merchants with high amounts,
    - anything sharply out of pattern with the rest of the statement.
    Ordinary spend (groceries, salary, rent, utilities, small subscriptions) is NOT flagged.

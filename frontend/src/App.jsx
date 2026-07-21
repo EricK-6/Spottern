@@ -22,8 +22,8 @@ export default function App() {
     }
   }
 
-  function handleSample() {
-    const result = loadSample();
+  function handleSample(id) {
+    const result = loadSample(id);
     setTransactions(result.transactions);
     setSource(result.source);
   }

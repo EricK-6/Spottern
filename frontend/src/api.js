@@ -12,7 +12,9 @@
  * swap analyzePdf to upload + poll.
  */
 
-import { MOCK_TRANSACTIONS } from "./mockData.js";
+import { MOCK_TRANSACTIONS, SAMPLES } from "./mockData.js";
+
+export { SAMPLES };
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -67,8 +69,9 @@ export async function analyzeStatement(file) {
   return { transactions: MOCK_TRANSACTIONS, source: "demo" };
 }
 
-export function loadSample() {
-  return { transactions: MOCK_TRANSACTIONS, source: "demo" };
+export function loadSample(id) {
+  const sample = SAMPLES.find((s) => s.id === id) || SAMPLES[0];
+  return { transactions: sample.transactions, source: "demo" };
 }
 
 export const HAS_BACKEND = Boolean(API_BASE);

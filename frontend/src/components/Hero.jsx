@@ -1,9 +1,10 @@
 import React, { useRef, useState } from "react";
+import { SAMPLES } from "../api.js";
 
 /**
  * Landing hero: the Spottern! wordmark, a "Let's Spot" upload button, a short
- * guidance line, and a sample fallback. Also accepts drag-and-drop anywhere
- * on the hero.
+ * guidance line, and a picker of sample statements. Also accepts drag-and-drop
+ * anywhere on the hero.
  */
 export default function Hero({ onFile, onSample, loading }) {
   const inputRef = useRef(null);
@@ -38,9 +39,23 @@ export default function Hero({ onFile, onSample, loading }) {
         reason why.
       </p>
 
-      <button className="sample-link" onClick={onSample} disabled={loading}>
-        or try a sample statement
-      </button>
+      <div className="sample-picker">
+        <span className="sample-lead">or explore a sample statement</span>
+        <div className="sample-chips">
+          {SAMPLES.map((s) => (
+            <button
+              key={s.id}
+              className="chip"
+              onClick={() => onSample(s.id)}
+              disabled={loading}
+              title={s.blurb}
+            >
+              <span className="chip-label">{s.label}</span>
+              <span className="chip-blurb">{s.blurb}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
       <input
         ref={inputRef}

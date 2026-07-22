@@ -10,7 +10,7 @@ export default function InsightBanner({ transactions }) {
 
   return (
     <div className={`insight ${clean ? "clean" : "alert"}`}>
-      <span className="insight-badge"><img src="/logo.png" alt="" /></span>
+      <span className="insight-badge"><img src={`${import.meta.env.BASE_URL}logo.png`} alt="" /></span>
       <span className="insight-text">
         {clean ? (
           <>We reviewed <strong>{n}</strong> transactions and nothing looked unusual. ✓</>

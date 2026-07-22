@@ -52,7 +52,7 @@ export default function App() {
     <>
       <header className="app-header">
         <span className="header-brand" onClick={reset} style={{ cursor: "pointer" }}>
-          <span className="header-badge"><img src="/logo.png" alt="" /></span>
+          <span className="header-badge"><img src={`${import.meta.env.BASE_URL}logo.png`} alt="" /></span>
           <span className="logo-sm">Spottern<span className="bang">!</span></span>
         </span>
         <span className="tagline">Spot unusual spending in your bank statement</span>

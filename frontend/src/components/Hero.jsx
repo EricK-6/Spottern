@@ -25,7 +25,7 @@ export default function Hero({ onFile, onSample, loading }) {
       onDrop={handleDrop}
     >
       <div className="hero-badge" aria-hidden="true">
-        <img src="/logo.png" alt="" />
+        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
       </div>
 
       <h1 className="logo">Spottern<span className="bang">!</span></h1>

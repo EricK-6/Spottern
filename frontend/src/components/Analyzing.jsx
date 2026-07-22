@@ -18,7 +18,7 @@ export default function Analyzing() {
   return (
     <div className="hero analyzing">
       <div className="hero-badge pulse" aria-hidden="true">
-        <img src="/logo.png" alt="" />
+        <img src={`${import.meta.env.BASE_URL}logo.png`} alt="" />
       </div>
       <div className="spinner" aria-hidden="true" />
       <p className="analyze-step" role="status">{STEPS[i]}</p>

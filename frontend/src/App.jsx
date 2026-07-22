@@ -62,8 +62,8 @@ export default function App() {
         {source === "demo" && (
           <div className="banner">
             {HAS_BACKEND
-              ? "Showing sample data — the live analysis wasn't reachable."
-              : "Demo mode — showing a sample statement analyzed by Spottern."}{" "}
+              ? "Showing sample data. The live analysis wasn't reachable."
+              : "Demo mode: showing a sample statement analyzed by Spottern."}{" "}
             <a href="#" onClick={(e) => { e.preventDefault(); reset(); }}>Spot another</a>
           </div>
         )}

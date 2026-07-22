@@ -71,7 +71,7 @@ export default function FlaggedAlerts({ transactions }) {
               {state ? (
                 <div className={`resolve-note ${state}`}>
                   {state === "reported"
-                    ? "✓ Reported — BNZ has been alerted and will be in touch."
+                    ? "✓ Reported. BNZ has been alerted and will be in touch."
                     : "✓ Marked as safe."}
                 </div>
               ) : (
@@ -86,7 +86,7 @@ export default function FlaggedAlerts({ transactions }) {
                     className="fa-btn report"
                     onClick={() => setResolved((r) => ({ ...r, [g.key]: "reported" }))}
                   >
-                    Not me — report
+                    Not me, report it
                   </button>
                 </div>
               )}

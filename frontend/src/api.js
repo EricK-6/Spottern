@@ -7,7 +7,7 @@
  * falls back to the bundled sample analysis so the dashboard always renders.
  *
  * PDF uploads go through S3 + Textract asynchronously in the real pipeline,
- * which the browser can't await synchronously — so in this demo build PDFs
+ * which the browser can't await synchronously, so in this demo build PDFs
  * resolve to the sample analysis too. Once deployed with a status endpoint,
  * swap analyzePdf to upload + poll.
  */
@@ -64,7 +64,7 @@ export async function analyzeStatement(file) {
     }
   }
 
-  // Delay so the "analyzing" moment is visible — makes the demo feel real.
+  // Delay so the "analyzing" moment is visible and the demo feels real.
   await new Promise(r => setTimeout(r, 1700));
   return { transactions: MOCK_TRANSACTIONS, source: "demo" };
 }

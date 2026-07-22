@@ -26,13 +26,13 @@ const money = amount => `$${Number(amount).toFixed(2)}`;
 
 /** One human-readable line for a flagged transaction. */
 function formatTransactionLine(t) {
-  const base = `${t.date}  ${t.merchant} — ${money(t.amount)}`;
+  const base = `${t.date}  ${t.merchant}: ${money(t.amount)}`;
   return t.explanation ? `${base}\n    Why we flagged it: ${t.explanation}` : base;
 }
 
 /**
  * Plain-language email for the customer. Returns { subject, text, html }.
- * Deliberately calm and jargon-free — the goal is "here's what we spotted,
+ * Deliberately calm and jargon-free. The goal is "here's what we spotted,
  * here's what to do", not to alarm.
  */
 function buildCustomerEmail(transactions) {
@@ -45,14 +45,14 @@ function buildCustomerEmail(transactions) {
   const intro =
     `Hi,\n\nSpottern reviewed your recent statement for ${accountRef} and spotted ` +
     `${count} ${noun} that look a little unusual. This doesn't necessarily mean ` +
-    `anything is wrong — we'd just like you to take a quick look:`;
+    `anything is wrong. We'd just like you to take a quick look:`;
 
   const lines = transactions.map(t => `  • ${formatTransactionLine(t)}`).join("\n\n");
 
   const outro =
     `\n\nIf you recognise these and they're expected, no action is needed.\n` +
     `If any look wrong, please contact BNZ or freeze your card in the app straight away.\n\n` +
-    `— The Spottern team\n(This is an automated review of a sample statement.)`;
+    `The Spottern team\n(This is an automated review of a sample statement.)`;
 
   const text = `${intro}\n\n${lines}${outro}`;
 
@@ -63,7 +63,7 @@ function buildCustomerEmail(transactions) {
         : "";
       return (
         `<tr><td style="padding:12px 0;border-bottom:1px solid #eee">` +
-        `<strong>${escapeHtml(t.merchant)}</strong> — ${money(t.amount)}` +
+        `<strong>${escapeHtml(t.merchant)}</strong>: ${money(t.amount)}` +
         `<div style="color:#888;font-size:12px">${t.date}</div>${why}</td></tr>`
       );
     })
@@ -77,7 +77,7 @@ function buildCustomerEmail(transactions) {
     `<table style="width:100%;border-collapse:collapse">${htmlRows}</table>` +
     `<p style="margin-top:20px">If you recognise these, no action is needed. If any look wrong, ` +
     `contact BNZ or freeze your card in the app straight away.</p>` +
-    `<p style="color:#888;font-size:12px">Automated review of a sample statement — Spottern.</p></div>`;
+    `<p style="color:#888;font-size:12px">Automated review of a sample statement. Spottern.</p></div>`;
 
   return { subject, text, html };
 }

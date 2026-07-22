@@ -13,11 +13,11 @@ export default function InsightBanner({ transactions }) {
       <span className="insight-badge"><img src="/logo.png" alt="" /></span>
       <span className="insight-text">
         {clean ? (
-          <>We reviewed <strong>{n}</strong> transactions — nothing looked unusual. ✓</>
+          <>We reviewed <strong>{n}</strong> transactions and nothing looked unusual. ✓</>
         ) : (
           <>
             We reviewed <strong>{n}</strong> transactions and flagged{" "}
-            <strong>{flagged.length}</strong> worth checking — <strong>{nzd(total)}</strong> in
+            <strong>{flagged.length}</strong> worth checking, <strong>{nzd(total)}</strong> in
             flagged value.
           </>
         )}

@@ -1,4 +1,4 @@
-/* Spottern theme — a mix of BNZ (deep blue) and AWS (orange + squid-ink navy)
+/* Spottern theme: a mix of BNZ (deep blue) and AWS (orange + squid-ink navy)
    brand identities. Fredoka gives the logo/headings a friendly rounded feel;
    Nunito carries the body. */
 
@@ -19,7 +19,7 @@
   --border:         rgba(35, 47, 62, 0.10);
   --gridline:       #e6eaf1;
 
-  --series-1:       #0a63d4;   /* chart bars — magnitude blue, brand-tuned */
+  --series-1:       #0a63d4;   /* chart bars: magnitude blue, brand-tuned */
   --flag-accent:    #e8590c;   /* warm alert (orange-red) */
   --flag-bg:        #fff5ec;
   --flag-border:    #ffd8b8;

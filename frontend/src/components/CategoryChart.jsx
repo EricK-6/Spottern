@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { nzd } from "../format.js";
 
 /**
- * Spending by category — a sorted horizontal bar chart. One measure (dollars
+ * Spending by category: a sorted horizontal bar chart. One measure (dollars
  * spent), so a single magnitude hue, not a categorical palette. Bars carry
  * direct value labels; hover shows the share of total spend.
  */

@@ -37,7 +37,7 @@ export default function Hero({ onFile, onSample, loading }) {
 
       <p className="guidance">
         Upload a CSV or PDF bank statement and our AI reviews every transaction,
-        sorts your spending, and flags anything unusual — with a plain-language
+        sorts your spending, and flags anything unusual, with a plain-language
         reason why.
       </p>
 
